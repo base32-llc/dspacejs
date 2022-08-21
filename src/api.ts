@@ -2,10 +2,10 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import log from "electron-log";
-import { keys } from ".";
-import { encode as encode64 } from "@stablelib/base64";
+import { Account } from "./types";
+import { Drive } from "./drive";
 
-export const getAPI = () => {
+export const getAPI = (account: Account, drive: Drive) => {
     const app = express();
     app.use(helmet());
     app.use(express.json());
@@ -13,7 +13,8 @@ export const getAPI = () => {
 
     app.get("/info", (req, res) => {
         res.json({
-            pubkey: encode64(keys.public),
+            pubkey: account.wallet.publicKey.toBase58(),
+            drive: drive.driveKey.toBase58(),
         });
     });
 

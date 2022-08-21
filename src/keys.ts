@@ -1,20 +1,29 @@
-import { Keys } from "./types";
 import fs from "fs";
-import msgpack from "msgpack-lite";
-import { box } from "tweetnacl";
 import log from "electron-log";
-import { encode as encode64 } from "@stablelib/base64";
+import * as anchor from "@project-serum/anchor";
+import { Connection, Keypair } from "@solana/web3.js";
+import { ShdwDrive } from "@shadow-drive/sdk";
 
-export const getKeys = (): Keys => {
+export const getAccount = async () => {
     if (!fs.existsSync("private.key")) {
-        const keypair = box.keyPair();
-        const data: Keys = {
-            public: keypair.publicKey,
-            private: keypair.secretKey,
-        };
-        fs.writeFileSync("private.key", msgpack.encode(data));
+        const keypair = Keypair.generate();
+        fs.writeFileSync("private.key", `[${keypair.secretKey.toString()}]`);
+        log.warn(
+            `No private key found. Generated new identity ${keypair.publicKey.toBase58()}`
+        );
     }
-    const keys: Keys = msgpack.decode(fs.readFileSync("private.key"));
-    log.info("Initialized identity " + encode64(keys.public));
-    return keys;
+    const pk = Uint8Array.from(
+        JSON.parse(fs.readFileSync("private.key").toString())
+    );
+    const connection = new Connection("https://ssc-dao.genesysgo.net/");
+    const wallet = new anchor.Wallet(
+        anchor.web3.Keypair.fromSecretKey(new Uint8Array(pk))
+    );
+
+    log.info(`Loaded identity ${wallet.publicKey.toBase58()}`);
+
+    return {
+        connection,
+        wallet,
+    };
 };
