@@ -1,16 +1,17 @@
-import { getAPI } from "./api";
 import { loadEnv } from "./utils/loadEnv";
-import { getAccount } from "./keys";
-import { Drive } from "./drive";
+import { getSolana } from "./solana";
+import { Client } from "./client";
+import log from "electron-log";
+import { getURL } from "./utils/stringUtils";
 
 // load the environment variables
 loadEnv();
 
 // start the modules
 async function main() {
-    const account = await getAccount();
-    const drive = await Drive.create(account);
-    const app = getAPI(account, drive);
+    const { connection, wallet } = await getSolana();
+    const client = await Client.create(connection, wallet);
+    log.info("Logged in as " + (await client.getUserInfo())?.username);
 }
 
 main();

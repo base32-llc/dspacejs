@@ -1,0 +1,108 @@
+import { ShdwDrive } from "@shadow-drive/sdk";
+import { User } from "./types";
+import log from "electron-log";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { APP_NAME, SHDW_DRIVE_VERSION } from "./constants";
+import { Wallet } from "@project-serum/anchor";
+import { randomUsername } from "./utils/randomUsername";
+import axios from "axios";
+import { getKeyAsBytes, getURL } from "./utils/stringUtils";
+
+export class Client {
+    public shdw: ShdwDrive;
+    public driveKey: PublicKey;
+
+    public static async create(connection: Connection, wallet: Wallet) {
+        const shdw = await new ShdwDrive(connection, wallet).init();
+
+        const storageAccounts = await shdw.getStorageAccounts(
+            SHDW_DRIVE_VERSION
+        );
+
+        let driveKey: PublicKey | null = null;
+
+        for (const acc of storageAccounts) {
+            if (acc.account.identifier === APP_NAME) {
+                driveKey = acc.publicKey;
+            }
+        }
+
+        // create the account if it doesn't exist
+        if (!driveKey) {
+            log.warn(
+                "Drive not found, creating new one. This can take a while."
+            );
+            const created = await shdw.createStorageAccount(
+                APP_NAME,
+                "10MB",
+                SHDW_DRIVE_VERSION
+            );
+            log.info("Created drive " + created.shdw_bucket);
+            driveKey = new PublicKey(created.shdw_bucket);
+        }
+
+        log.info("Initialized drive " + driveKey.toBase58());
+
+        // check if user metadata exists
+        const identifiers = await shdw.listObjects(driveKey);
+        if (!identifiers.keys.includes("user.json")) {
+            const user: User = {
+                username: randomUsername(),
+                pubkey: driveKey.toBase58(),
+            };
+            await shdw.uploadFile(
+                driveKey,
+                {
+                    name: "user.json",
+                    file: Buffer.from(JSON.stringify(user)),
+                },
+                SHDW_DRIVE_VERSION
+            );
+        }
+
+        return new Client(shdw, driveKey);
+    }
+
+    private constructor(shdw: ShdwDrive, driveKey: PublicKey) {
+        this.shdw = shdw;
+        this.driveKey = driveKey;
+    }
+
+    private async getFile(identifier: string) {
+        const files = await this.shdw.listObjects(getKeyAsBytes(this.driveKey));
+
+        for (const key of files.keys) {
+            if (key.includes(identifier)) {
+                const res = await axios.get(getURL(this.driveKey, identifier));
+                return res.data;
+            }
+        }
+
+        return null;
+    }
+
+    public async getUserInfo(): Promise<User | null> {
+        const user = await this.getFile("user.json");
+        if (!user) {
+            return null;
+        }
+        return user as User;
+    }
+
+    public async setUsername(username: string) {
+        const user = await this.getUserInfo();
+        if (!user) {
+            throw new Error("User not found");
+        }
+        user.username = username;
+        await this.shdw.editFile(
+            this.driveKey,
+            getURL(this.driveKey, "user.json"),
+            {
+                name: "user.json",
+                file: Buffer.from(JSON.stringify(user)),
+            },
+            SHDW_DRIVE_VERSION
+        );
+    }
+}

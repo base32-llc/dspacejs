@@ -1,10 +1,12 @@
 import fs from "fs";
 import log from "electron-log";
-import * as anchor from "@project-serum/anchor";
+import { Wallet, web3 } from "@project-serum/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
-import { ShdwDrive } from "@shadow-drive/sdk";
 
-export const getAccount = async () => {
+export const getSolana = async (): Promise<{
+    connection: Connection;
+    wallet: Wallet;
+}> => {
     if (!fs.existsSync("private.key")) {
         const keypair = Keypair.generate();
         fs.writeFileSync("private.key", `[${keypair.secretKey.toString()}]`);
@@ -16,9 +18,7 @@ export const getAccount = async () => {
         JSON.parse(fs.readFileSync("private.key").toString())
     );
     const connection = new Connection("https://ssc-dao.genesysgo.net/");
-    const wallet = new anchor.Wallet(
-        anchor.web3.Keypair.fromSecretKey(new Uint8Array(pk))
-    );
+    const wallet = new Wallet(web3.Keypair.fromSecretKey(new Uint8Array(pk)));
 
     log.info(`Loaded identity ${wallet.publicKey.toBase58()}`);
 
