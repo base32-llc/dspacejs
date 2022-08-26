@@ -35,6 +35,7 @@
         "@solana/web3.js": "^1.53.0",
         "axios": "^0.27.2",
         "bip39": "^3.0.4",
+        "browser-or-node": "^2.0.0",
         "bs58": "^5.0.0",
         "capital-case": "^1.0.4",
         "dotenv": "^8.2.0",

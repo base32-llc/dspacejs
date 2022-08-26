@@ -1,4 +1,4 @@
-import { ShdwDrive } from "@shadow-drive/sdk";
+import { ShadowFile, ShdwDrive } from "@shadow-drive/sdk";
 import { User } from "./types";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { APP_NAME, SHDW_DRIVE_VERSION } from "./constants";
@@ -6,10 +6,30 @@ import { Wallet } from "@project-serum/anchor";
 import { randomUsername } from "./utils/randomUsername";
 import axios from "axios";
 import { getKeyAsBytes, getURL } from "./utils/stringUtils";
+import { isNode, isBrowser } from "browser-or-node";
 
 export class Client {
     public shdw: ShdwDrive;
     public driveKey: PublicKey;
+
+    private static getPayload(data: any, identifier: string): File | ShadowFile {
+        if (isNode) {
+            return {
+                name: identifier,
+                file: Buffer.from(JSON.stringify(data)),
+            }
+        }
+        if (isBrowser) {
+            return new File(
+                [JSON.parse(JSON.stringify(data))],
+                identifier,
+                {
+                    type: "application/json",
+                }
+            );
+        }
+        throw new Error("Unsupported environment");
+    }
 
     public static async isRegistered(
         connection: Connection,
@@ -71,10 +91,7 @@ export class Client {
             };
             await shdw.uploadFile(
                 driveKey,
-                {
-                    name: "user.json",
-                    file: Buffer.from(JSON.stringify(user)),
-                },
+                Client.getPayload(user, "user.json"),
                 SHDW_DRIVE_VERSION
             );
         }
