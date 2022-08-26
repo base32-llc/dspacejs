@@ -1,16 +1,19 @@
 import { ShadowFile, ShdwDrive } from "@shadow-drive/sdk";
 import { User } from "./types";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { APP_NAME, SHDW_DRIVE_VERSION } from "./constants";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { APP_NAME, SHDW_DRIVE_VERSION, SHDW_TOKEN_CONTRACT } from "./constants";
 import { Wallet } from "@project-serum/anchor";
 import { randomUsername } from "./utils/randomUsername";
 import axios from "axios";
 import { getKeyAsBytes, getURL } from "./utils/stringUtils";
 import { isNode, isBrowser } from "browser-or-node";
+import { TOKEN_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 export class Client {
     public shdw: ShdwDrive;
     public driveKey: PublicKey;
+    private connection: Connection;
+    private wallet: Wallet;
 
     public static getDrive(connection: Connection, wallet: Wallet) {
         return new ShdwDrive(connection, wallet).init();
@@ -99,10 +102,17 @@ export class Client {
             );
         }
 
-        return new Client(shdw, driveKey);
+        return new Client(shdw, driveKey, wallet, connection);
     }
 
-    private constructor(shdw: ShdwDrive, driveKey: PublicKey) {
+    private constructor(
+        shdw: ShdwDrive,
+        driveKey: PublicKey,
+        wallet: Wallet,
+        connection: Connection
+    ) {
+        this.connection = connection;
+        this.wallet = wallet;
         this.shdw = shdw;
         this.driveKey = driveKey;
     }
@@ -134,6 +144,43 @@ export class Client {
             throw new Error("Required user metadata not found");
         }
         return user as User;
+    }
+
+    /**
+     * Helper function to retrieve the user's balance of $SHDW
+     * and $SOL tokens
+     *
+     * @returns
+     */
+    public async getBalances(): Promise<{
+        SHDW: number;
+        SOL: number;
+    }> {
+        const solBalance = await this.connection.getBalance(
+            this.wallet.publicKey
+        ); // Get the user's SOL balance
+        let shdwBalance = 0.0;
+
+        const tokenAccounts =
+            await this.connection.getParsedTokenAccountsByOwner(
+                this.wallet.publicKey,
+                { programId: TOKEN_PROGRAM_ID }
+            );
+        for (const acc of tokenAccounts.value) {
+            if (
+                acc.account.data.parsed.info.mint ===
+                SHDW_TOKEN_CONTRACT.toBase58()
+            ) {
+                const bal = await this.connection.getTokenAccountBalance(
+                    acc.pubkey
+                );
+                if (bal.value.uiAmount) shdwBalance = bal.value.uiAmount;
+            }
+        }
+        return {
+            SHDW: shdwBalance,
+            SOL: solBalance / LAMPORTS_PER_SOL,
+        };
     }
 
     public async setUsername(username: string) {
