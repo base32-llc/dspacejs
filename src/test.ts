@@ -11,9 +11,6 @@ async function main() {
     }
 
     const client = await Client.create(connection, wallet);
-
-    const user = await client.getUserInfo();
-    console.log("Logged in as " + user.username);
 }
 
 main();

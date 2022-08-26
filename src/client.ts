@@ -12,21 +12,24 @@ export class Client {
     public shdw: ShdwDrive;
     public driveKey: PublicKey;
 
-    private static getPayload(data: any, identifier: string): File | ShadowFile {
+    public static getDrive(connection: Connection, wallet: Wallet) {
+        return new ShdwDrive(connection, wallet).init();
+    }
+
+    private static getPayload(
+        data: any,
+        identifier: string
+    ): File | ShadowFile {
         if (isNode) {
             return {
                 name: identifier,
                 file: Buffer.from(JSON.stringify(data)),
-            }
+            };
         }
         if (isBrowser) {
-            return new File(
-                [JSON.stringify(data)],
-                identifier,
-                {
-                    type: "application/json",
-                }
-            );
+            return new File([JSON.stringify(data)], identifier, {
+                type: "application/json",
+            });
         }
         throw new Error("Unsupported environment");
     }
@@ -115,6 +118,14 @@ export class Client {
         }
 
         return null;
+    }
+
+    public async upload(data: any, identifier: string) {
+        await this.shdw.uploadFile(
+            this.driveKey,
+            Client.getPayload(data, identifier),
+            SHDW_DRIVE_VERSION
+        );
     }
 
     public async getUserInfo(): Promise<User> {
