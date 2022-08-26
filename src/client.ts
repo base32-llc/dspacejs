@@ -21,7 +21,7 @@ export class Client {
         }
         if (isBrowser) {
             return new File(
-                [JSON.parse(JSON.stringify(data))],
+                [JSON.stringify(data)],
                 identifier,
                 {
                     type: "application/json",
