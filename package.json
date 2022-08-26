@@ -1,6 +1,6 @@
 {
     "name": "@extrahash/dspacejs",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Quick start for typescript projects",
     "main": "./dist/index.js",
     "author": "Extra <extrahash@protonmail.com>",
