@@ -1,5 +1,5 @@
 {
-    "name": "@extrahash/dspacejs",
+    "name": "@base32/dspacejs",
     "version": "0.2.4",
     "description": "Quick start for typescript projects",
     "main": "./dist/index.js",

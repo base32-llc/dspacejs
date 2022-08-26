@@ -4,9 +4,12 @@ import { randomUsername } from "./utils/randomUsername";
 
 // start the modules
 async function main() {
-    console.log(randomUsername());
-
     const { connection, wallet } = await getSolana();
+
+    if (await Client.isRegistered(connection, wallet)) {
+        console.log("Already registered");
+    }
+
     const client = await Client.create(connection, wallet);
 
     const user = await client.getUserInfo();

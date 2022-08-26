@@ -11,6 +11,26 @@ export class Client {
     public shdw: ShdwDrive;
     public driveKey: PublicKey;
 
+    public static async isRegistered(
+        connection: Connection,
+        wallet: Wallet
+    ): Promise<boolean> {
+        const shdw = await new ShdwDrive(connection, wallet).init();
+
+        const storageAccounts = await shdw.getStorageAccounts(
+            SHDW_DRIVE_VERSION
+        );
+
+        let driveKey: PublicKey | null = null;
+        for (const acc of storageAccounts) {
+            if (acc.account.identifier === APP_NAME) {
+                driveKey = acc.publicKey;
+            }
+        }
+
+        return driveKey ? true : false;
+    }
+
     public static async create(connection: Connection, wallet: Wallet) {
         const shdw = await new ShdwDrive(connection, wallet).init();
 
