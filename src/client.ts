@@ -145,10 +145,7 @@ export class Client {
         await this.shdw.editFile(
             this.driveKey,
             getURL(this.driveKey, "user.json"),
-            {
-                name: "user.json",
-                file: Buffer.from(JSON.stringify(user)),
-            },
+            Client.getPayload(user, "user.json"),
             SHDW_DRIVE_VERSION
         );
     }
