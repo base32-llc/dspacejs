@@ -6,6 +6,7 @@
     "author": "Extra <extrahash@protonmail.com>",
     "license": "MIT",
     "private": true,
+    "repository": "https://github.com/ExtraHash/dspace-js",
     "scripts": {
         "start": "npx ts-node ./src/test.ts",
         "build": "node ./node_modules/typescript/bin/tsc",
