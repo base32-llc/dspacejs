@@ -1,6 +1,5 @@
 import { ShdwDrive } from "@shadow-drive/sdk";
 import { User } from "./types";
-import log from "electron-log";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { APP_NAME, SHDW_DRIVE_VERSION } from "./constants";
 import { Wallet } from "@project-serum/anchor";
@@ -29,7 +28,7 @@ export class Client {
 
         // create the account if it doesn't exist
         if (!driveKey) {
-            log.warn(
+            console.warn(
                 "Drive not found, creating new one. This can take a while."
             );
             const created = await shdw.createStorageAccount(
@@ -37,11 +36,11 @@ export class Client {
                 "10MB",
                 SHDW_DRIVE_VERSION
             );
-            log.info("Created drive " + created.shdw_bucket);
+            console.log("Created drive " + created.shdw_bucket);
             driveKey = new PublicKey(created.shdw_bucket);
         }
 
-        log.info("Initialized drive " + driveKey.toBase58());
+        console.log("Initialized drive " + driveKey.toBase58());
 
         // check if user metadata exists
         const identifiers = await shdw.listObjects(driveKey);
@@ -81,10 +80,10 @@ export class Client {
         return null;
     }
 
-    public async getUserInfo(): Promise<User | null> {
+    public async getUserInfo(): Promise<User> {
         const user = await this.getFile("user.json");
         if (!user) {
-            return null;
+            throw new Error("Required user metadata not found");
         }
         return user as User;
     }

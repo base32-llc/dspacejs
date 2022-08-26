@@ -1,5 +1,4 @@
 import fs from "fs";
-import log from "electron-log";
 import { Wallet, web3 } from "@project-serum/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
 
@@ -10,7 +9,7 @@ export const getSolana = async (): Promise<{
     if (!fs.existsSync("private.key")) {
         const keypair = Keypair.generate();
         fs.writeFileSync("private.key", `[${keypair.secretKey.toString()}]`);
-        log.warn(
+        console.warn(
             `No private key found. Generated new identity ${keypair.publicKey.toBase58()}`
         );
     }
@@ -20,7 +19,7 @@ export const getSolana = async (): Promise<{
     const connection = new Connection("https://ssc-dao.genesysgo.net/");
     const wallet = new Wallet(web3.Keypair.fromSecretKey(new Uint8Array(pk)));
 
-    log.info(`Loaded identity ${wallet.publicKey.toBase58()}`);
+    console.log(`Loaded identity ${wallet.publicKey.toBase58()}`);
 
     return {
         connection,

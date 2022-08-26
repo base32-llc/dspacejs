@@ -9,5 +9,5 @@ export interface Account {
 export interface User {
     username: string;
     pubkey: string;
-    pfp: string;
+    pfp?: string;
 }

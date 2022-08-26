@@ -1,0 +1,11 @@
+.eslintignore
+.eslintrc
+.github
+.vscode
+
+node_modules
+src
+**/*.log
+.env
+account.json
+*.tgz
