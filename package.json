@@ -1,11 +1,11 @@
 {
-    "name": "@extrahash/dspace-js",
+    "name": "@extrahash/dspacejs",
     "version": "0.2.0",
     "description": "Quick start for typescript projects",
     "main": "./dist/index.js",
     "author": "Extra <extrahash@protonmail.com>",
     "license": "MIT",
-    "repository": "https://github.com/ExtraHash/dspace-js",
+    "repository": "https://github.com/ExtraHash/dspacejs",
     "scripts": {
         "start": "npx ts-node ./src/test.ts",
         "build": "node ./node_modules/typescript/bin/tsc",
