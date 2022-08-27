@@ -8,6 +8,7 @@ import axios from "axios";
 import { getKeyAsBytes, getURL } from "./utils/stringUtils";
 import { isNode, isBrowser } from "browser-or-node";
 import { TOKEN_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
+import { fileToBase64String } from "./utils/fileToBase64";
 
 export class Client {
     public shdw: ShdwDrive;
@@ -186,6 +187,20 @@ export class Client {
             throw new Error("User not found");
         }
         user.username = username;
+        await this.shdw.editFile(
+            this.driveKey,
+            getURL(this.driveKey, "user.json"),
+            Client.getPayload(user, "user.json"),
+            SHDW_DRIVE_VERSION
+        );
+    }
+
+    public async setPFP(file: File) {
+        const user = await this.getUserInfo();
+        if (!user) {
+            throw new Error("User not found");
+        }
+        user.pfp = await fileToBase64String(file, "image/webp");
         await this.shdw.editFile(
             this.driveKey,
             getURL(this.driveKey, "user.json"),

@@ -11,6 +11,14 @@ async function main() {
     }
 
     const client = await Client.create(connection, wallet);
+
+    console.log(
+        client.fileToBase64String(
+            new File([JSON.stringify({})], "test.json", {
+                type: "application/json",
+            })
+        )
+    );
 }
 
 main();
