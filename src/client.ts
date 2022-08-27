@@ -15,41 +15,39 @@ export class Client {
     private connection: Connection;
     private wallet: Wallet;
     /**
-    * Helper function to retrieve the user's balance of $SHDW
-    * and $SOL tokens
-    *
-    * @returns
-    */
-   public static async getBalances(connection: Connection, wallet: Wallet): Promise<{
-       SHDW: number;
-       SOL: number;
-   }> {
-       const solBalance = await connection.getBalance(
-           wallet.publicKey
-       ); // Get the user's SOL balance
-       let shdwBalance = 0.0;
+     * Helper function to retrieve the user's balance of $SHDW
+     * and $SOL tokens
+     *
+     * @returns
+     */
+    public static async getBalances(
+        connection: Connection,
+        wallet: Wallet
+    ): Promise<{
+        SHDW: number;
+        SOL: number;
+    }> {
+        const solBalance = await connection.getBalance(wallet.publicKey); // Get the user's SOL balance
+        let shdwBalance = 0.0;
 
-       const tokenAccounts =
-           await connection.getParsedTokenAccountsByOwner(
-               wallet.publicKey,
-               { programId: TOKEN_PROGRAM_ID }
-           );
-       for (const acc of tokenAccounts.value) {
-           if (
-               acc.account.data.parsed.info.mint ===
-               SHDW_TOKEN_CONTRACT.toBase58()
-           ) {
-               const bal = await connection.getTokenAccountBalance(
-                   acc.pubkey
-               );
-               if (bal.value.uiAmount) shdwBalance = bal.value.uiAmount;
-           }
-       }
-       return {
-           SHDW: shdwBalance,
-           SOL: solBalance / LAMPORTS_PER_SOL,
-       };
-   }
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+            wallet.publicKey,
+            { programId: TOKEN_PROGRAM_ID }
+        );
+        for (const acc of tokenAccounts.value) {
+            if (
+                acc.account.data.parsed.info.mint ===
+                SHDW_TOKEN_CONTRACT.toBase58()
+            ) {
+                const bal = await connection.getTokenAccountBalance(acc.pubkey);
+                if (bal.value.uiAmount) shdwBalance = bal.value.uiAmount;
+            }
+        }
+        return {
+            SHDW: shdwBalance,
+            SOL: solBalance / LAMPORTS_PER_SOL,
+        };
+    }
 
     public static getDrive(connection: Connection, wallet: Wallet) {
         return new ShdwDrive(connection, wallet).init();
