@@ -1,5 +1,5 @@
 import { ShadowFile, ShdwDrive } from "@shadow-drive/sdk";
-import { User } from "./types";
+import { Link, User } from "./types";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { APP_NAME, SHDW_DRIVE_VERSION, SHDW_TOKEN_CONTRACT } from "./constants";
 import { Wallet } from "@project-serum/anchor";
@@ -201,6 +201,20 @@ export class Client {
             throw new Error("User not found");
         }
         user.pfp = await fileToBase64String(file, "image/webp");
+        await this.shdw.editFile(
+            this.driveKey,
+            getURL(this.driveKey, "user.json"),
+            Client.getPayload(user, "user.json"),
+            SHDW_DRIVE_VERSION
+        );
+    }
+
+    public async setLinks(links: Link[]) {
+        const user = await this.getUserInfo();
+        if (!user) {
+            throw new Error("User not found");
+        }
+        user.links = links;
         await this.shdw.editFile(
             this.driveKey,
             getURL(this.driveKey, "user.json"),
