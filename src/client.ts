@@ -13,8 +13,6 @@ import { fileToBase64String } from "./utils/fileToBase64";
 export class Client {
     public shdw: ShdwDrive;
     public driveKey: PublicKey;
-    private connection: Connection;
-    private wallet: Wallet;
     /**
      * Helper function to retrieve the user's balance of $SHDW
      * and $SOL tokens
@@ -55,6 +53,7 @@ export class Client {
     }
 
     private static getPayload(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any,
         identifier: string
     ): File | ShadowFile {
@@ -137,17 +136,10 @@ export class Client {
             );
         }
 
-        return new Client(shdw, driveKey, wallet, connection);
+        return new Client(shdw, driveKey);
     }
 
-    private constructor(
-        shdw: ShdwDrive,
-        driveKey: PublicKey,
-        wallet: Wallet,
-        connection: Connection
-    ) {
-        this.connection = connection;
-        this.wallet = wallet;
+    private constructor(shdw: ShdwDrive, driveKey: PublicKey) {
         this.shdw = shdw;
         this.driveKey = driveKey;
     }
@@ -165,6 +157,7 @@ export class Client {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async upload(data: any, identifier: string) {
         await this.shdw.uploadFile(
             this.driveKey,
